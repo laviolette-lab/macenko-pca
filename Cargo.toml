@@ -8,7 +8,7 @@ authors = ["barrettMCW <mjbarrett@mcw.edu>"]
 repository = "https://github.com/LavLabInfrastructure/macenko-pca"
 
 [dependencies]
-ndarray = { version = "0.16", features = ["rayon"] }
+ndarray = { version = "0.17", features = ["rayon"] }
 ndarray-linalg = { version = "0.17", features = ["openblas-system"] }
 cauchy = "0.4"
 lax = "0.17"
