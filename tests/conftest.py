@@ -26,7 +26,7 @@ def rng():
 def sample_rgb_image(rng):
     """Provide a small synthetic RGB image for testing (float64).
 
-    Returns a 64×64×3 float64 image with values in [1, 255].
+    Returns a 64x64x3 float64 image.
 
     :return: synthetic RGB image
     :rtype: numpy.ndarray
@@ -38,7 +38,7 @@ def sample_rgb_image(rng):
 def sample_rgb_image_large(rng):
     """Provide a larger synthetic RGB image for more realistic testing (float64).
 
-    Returns a 256×256×3 float64 image with values in [1, 255].
+    Returns a 256x256x3 float64 image.
 
     :return: synthetic RGB image
     :rtype: numpy.ndarray
@@ -99,7 +99,7 @@ def sample_rgb_image_f16(sample_rgb_image):
 def sample_mask():
     """Provide a boolean mask matching the small sample image dimensions.
 
-    Creates a 64×64 mask where a central 16×16 block is True (excluded).
+    Creates a 64x64 mask with a central 16x16 True block.
 
     :return: boolean mask array
     :rtype: numpy.ndarray

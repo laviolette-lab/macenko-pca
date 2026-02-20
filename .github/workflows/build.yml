@@ -36,18 +36,21 @@ jobs:
           args: --release --out dist
           sccache: "true"
           before-script-linux: |
-            yum install -y openblas-devel pkgconfig || \
-            apt-get update && apt-get install -y libopenblas-dev pkg-config || true
+            # Try yum (CentOS-based manylinux) first, then fall back to apt (Debian/Ubuntu).
+            # Install OpenBLAS and OpenSSL development headers + pkg-config so native crates can link.
+            yum install -y openblas-devel openssl-devel pkgconfig || \
+            (apt-get update && apt-get install -y libopenblas-dev libssl-dev pkg-config) || true
 
       - name: Install macOS system deps
         if: runner.os == 'macOS'
-        run: brew install openblas pkg-config
+        run: brew install openblas pkg-config openssl
 
       - name: Build wheels (macOS)
         if: runner.os == 'macOS'
         uses: PyO3/maturin-action@v1
         env:
-          PKG_CONFIG_PATH: /opt/homebrew/opt/openblas/lib/pkgconfig:/usr/local/opt/openblas/lib/pkgconfig
+          # Help pkg-config find Homebrew's openblas and openssl on both Intel and ARM runners
+          PKG_CONFIG_PATH: /opt/homebrew/opt/openblas/lib/pkgconfig:/usr/local/opt/openblas/lib/pkgconfig:/opt/homebrew/opt/openssl/lib/pkgconfig:/usr/local/opt/openssl/lib/pkgconfig
         with:
           args: --release --out dist
           sccache: "true"
@@ -55,9 +58,18 @@ jobs:
       - name: Build wheels (Windows)
         if: runner.os == 'Windows'
         uses: PyO3/maturin-action@v1
+        env:
+          # Use runner temporary directory for vcpkg bootstrap
+          VCPKG_ROOT: ${{ runner.temp }}/vcpkg
         with:
           args: --release --out dist
           sccache: "true"
+          before-script-windows: |
+            REM Bootstrap vcpkg and install OpenBLAS on Windows runners.
+            powershell -Command "if (-Not (Test-Path -Path $env:VCPKG_ROOT)) { git clone https://github.com/microsoft/vcpkg.git $env:VCPKG_ROOT; & $env:VCPKG_ROOT\\bootstrap-vcpkg.bat }"
+            powershell -Command "& $env:VCPKG_ROOT\\vcpkg.exe install openblas:x64-windows && & $env:VCPKG_ROOT\\vcpkg.exe integrate install"
+            REM Expose VCPKG_ROOT for the build step
+            setx VCPKG_ROOT "%VCPKG_ROOT%"
 
       - name: Upload wheel artifacts
         uses: actions/upload-artifact@v4

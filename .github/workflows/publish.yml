@@ -74,27 +74,40 @@ jobs:
           args: --release --out dist
           sccache: "true"
           before-script-linux: |
-            yum install -y openblas-devel pkgconfig || \
-            apt-get update && apt-get install -y libopenblas-dev pkg-config || true
+            # Try yum (CentOS-based manylinux) first, then fall back to apt (Debian/Ubuntu).
+            # Install OpenBLAS, OpenSSL development headers and pkg-config so native crates can link.
+            yum install -y openblas-devel openssl-devel pkgconfig || \
+            (apt-get update && apt-get install -y libopenblas-dev libssl-dev pkg-config) || true
 
       - name: Build wheels (macOS)
         if: runner.os == 'macOS'
         uses: PyO3/maturin-action@v1
         env:
-          # Help pkg-config find Homebrew's openblas on both Intel and ARM runners
-          PKG_CONFIG_PATH: /opt/homebrew/opt/openblas/lib/pkgconfig:/usr/local/opt/openblas/lib/pkgconfig
+          # Help pkg-config find Homebrew's openblas and openssl on both Intel and ARM runners
+          PKG_CONFIG_PATH: /opt/homebrew/opt/openblas/lib/pkgconfig:/usr/local/opt/openblas/lib/pkgconfig:/opt/homebrew/opt/openssl/lib/pkgconfig:/usr/local/opt/openssl/lib/pkgconfig
         with:
           args: --release --out dist
           sccache: "true"
-          before-script-linux: ""  # no-op for macOS, deps installed below
 
       - name: Install macOS system deps
         if: runner.os == 'macOS'
-        run: brew install openblas pkg-config
+        run: brew install openblas pkg-config openssl
+
+      - name: Install Windows vcpkg and build deps
+        if: runner.os == 'Windows'
+        run: |
+          git clone https://github.com/microsoft/vcpkg C:\vcpkg
+          pushd C:\vcpkg
+          .\bootstrap-vcpkg.bat
+          .\vcpkg.exe install openblas:x64-windows openssl:x64-windows pkgconfig
+          popd
+        shell: cmd
 
       - name: Build wheels (Windows)
         if: runner.os == 'Windows'
         uses: PyO3/maturin-action@v1
+        env:
+          VCPKG_ROOT: C:\vcpkg
         with:
           args: --release --out dist
           sccache: "true"
@@ -141,7 +154,7 @@ jobs:
       name: pypi
       url: https://pypi.org/p/macenko-pca
     permissions:
-      id-token: write  # Required for trusted publishing OIDC exchange
+      id-token: write # Required for trusted publishing OIDC exchange
     steps:
       - name: Download all artifacts
         uses: actions/download-artifact@v4
