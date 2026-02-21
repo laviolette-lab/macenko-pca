@@ -94,7 +94,7 @@ def _htk_color_deconvolution(
     stain_matrix: np.ndarray,
 ) -> np.ndarray:
     """Reference color_deconvolution: C = SDA @ inv(W)^T."""
-    h, w, c = im_sda.shape
+    h, w, _c = im_sda.shape
     sda_flat = im_sda.reshape(-1, 3)
     w_inv = np.linalg.inv(stain_matrix)
     result = sda_flat @ w_inv.T
@@ -107,7 +107,7 @@ def _htk_reconstruct_rgb(
     bg_int: float = 256.0,
 ) -> np.ndarray:
     """Reference reconstruct_rgb: invert the SDA -> RGB transform."""
-    h, w, c = concentrations.shape
+    h, w, _c = concentrations.shape
     conc_flat = concentrations.reshape(-1, 3)
     sda = conc_flat @ stain_matrix.T
     ln_bg = np.log(bg_int)
@@ -144,7 +144,7 @@ def _htk_separate_stains_macenko_pca(
     This closely follows the HistomicsTK implementation in
     ``preprocessing.color_deconvolution.separate_stains_macenko_pca``.
     """
-    h, w, c = im_sda.shape
+    _h, _w, c = im_sda.shape
     # Flatten to (3, N)
     m = im_sda.reshape(-1, c).T.astype(np.float64)
 
