@@ -1,6 +1,6 @@
 [package]
 name = "macenko-pca"
-version = "1.0.1"
+version = "1.0.2"
 edition = "2024"
 description = "High-performance Macenko PCA stain deconvolution via Rust + PyO3"
 license = "MIT"
