@@ -1,8 +1,8 @@
 # Macenko PCA
 
-[![Build](https://github.com/LavLabInfrastructure/macenko-pca/actions/workflows/build.yml/badge.svg)](https://github.com/LavLabInfrastructure/macenko-pca/actions/workflows/build.yml)
-[![Tests](https://github.com/LavLabInfrastructure/macenko-pca/actions/workflows/pytest.yml/badge.svg)](https://github.com/LavLabInfrastructure/macenko-pca/actions/workflows/pytest.yml)
-[![Lint](https://github.com/LavLabInfrastructure/macenko-pca/actions/workflows/lint.yml/badge.svg)](https://github.com/LavLabInfrastructure/macenko-pca/actions/workflows/lint.yml)
+[![Build](https://github.com/laviolette-lab/macenko-pca/actions/workflows/build.yml/badge.svg)](https://github.com/laviolette-lab/macenko-pca/actions/workflows/build.yml)
+[![Tests](https://github.com/laviolette-lab/macenko-pca/actions/workflows/pytest.yml/badge.svg)](https://github.com/laviolette-lab/macenko-pca/actions/workflows/pytest.yml)
+[![Lint](https://github.com/laviolette-lab/macenko-pca/actions/workflows/lint.yml/badge.svg)](https://github.com/laviolette-lab/macenko-pca/actions/workflows/lint.yml)
 [![PyPI - Version](https://img.shields.io/pypi/v/macenko-pca.svg)](https://pypi.org/project/macenko-pca)
 [![PyPI - Python Version](https://img.shields.io/pypi/pyversions/macenko-pca.svg)](https://pypi.org/project/macenko-pca)
 
@@ -15,6 +15,12 @@ Supported platforms: Linux and macOS only. Windows is not supported due to diffe
 This implements the method described in:
 
 > Macenko, M. et al. "A method for normalizing histology slides for quantitative analysis." *ISBI 2009*.
+
+And was based off the implementation from HistomicsTK
+
+> <https://github.com/DigitalSlideArchive/HistomicsTK>
+
+Performance improvements between the HistomicsTK implementation and this one are discussed [here](https://github.com/DigitalSlideArchive/HistomicsTK/issues/1181#issuecomment-3164417399). We saw almost a quarter of the RAM usage and up to a 7x speedup in real world examples.
 
 ## Features
 
