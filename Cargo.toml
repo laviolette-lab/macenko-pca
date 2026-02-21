@@ -9,10 +9,10 @@ repository = "https://github.com/LavLabInfrastructure/macenko-pca"
 
 [dependencies]
 ndarray = { version = "0.17", features = ["rayon"] }
-ndarray-linalg = { version = "0.17", features = ["openblas-system"] }
+ndarray-linalg = { version = "0.18", features = ["openblas-system"] }
 cauchy = "0.4"
 lax = "0.18"
-pyo3 = { version = "0.25", features = ["extension-module"] }
+pyo3 = { version = "0.28", features = ["extension-module"] }
 numpy = "0.25"
 rayon = "1.10"
 num-traits = "0.2"
