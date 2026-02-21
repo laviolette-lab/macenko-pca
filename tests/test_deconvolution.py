@@ -137,7 +137,7 @@ class TestRgbSeparateStainsMacenkoPca:
             assert norm == pytest.approx(1.0, abs=1e-6)
 
     def test_third_column_is_complement(self, sample_rgb_image):
-        """Third stain vector should be the normalised cross product of the first two."""
+        """Third stain vector equals the normalised cross-product of the first two."""
         result = rgb_separate_stains_macenko_pca(sample_rgb_image)
         cross = np.cross(result[:, 0], result[:, 1])
         cross_normed = cross / np.linalg.norm(cross)
@@ -840,7 +840,7 @@ class TestIntegration:
         np.testing.assert_allclose(recon, sample_rgb_image_f32, atol=5.0, rtol=0.05)
 
     def test_stain_isolation_produces_different_images(self, sample_rgb_image):
-        """Isolating different stains should produce visually different reconstructions."""
+        """Isolating different stains should produce different reconstructions."""
         w = rgb_separate_stains_macenko_pca(sample_rgb_image)
         conc = rgb_color_deconvolution(sample_rgb_image, w)
 

@@ -14,11 +14,14 @@ jobs:
         os: [ubuntu-latest, macos-latest]
         python-version: ["3.9", "3.10", "3.11", "3.12", "3.13"]
 
+    env:
+      CODECOV_TOKEN: ${{ secrets.CODECOV_TOKEN }}
+
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v6
 
       - name: Set up Python ${{ matrix.python-version }}
-        uses: actions/setup-python@v5
+        uses: actions/setup-python@v6
         with:
           python-version: ${{ matrix.python-version }}
 
@@ -35,34 +38,45 @@ jobs:
         if: runner.os == 'macOS'
         run: brew install openblas pkg-config
 
-      - name: Install Python dependencies
+      - name: Create virtualenv
+        run: python -m venv .venv
+
+      - name: Install Python dependencies into virtualenv
         run: |
+          # Activate the venv and install dependencies into it. Using explicit
+          # `python -m pip` ensures we use the venv's pip regardless of shell.
+          . .venv/bin/activate
           python -m pip install --upgrade pip
-          pip install maturin pytest pytest-cov coverage
+          python -m pip install maturin pytest pytest-cov coverage
 
-      - name: Build and install extension
-        run: maturin develop --release
+      - name: Build and install extension (inside virtualenv)
+        run: |
+          . .venv/bin/activate
+          # Run maturin via `python -m` so it uses the venv's site-packages entrypoint.
+          python -m maturin develop --release
 
-      - name: Run pytest and generate coverage report
-        run: pytest --cov=src --cov-report=term-missing --cov-report=xml tests/
+      - name: Run pytest and generate coverage report (inside virtualenv)
+        run: |
+          . .venv/bin/activate
+          python -m pytest --cov=src --cov-report=term-missing --cov-report=xml tests/
 
       - name: Upload coverage artifact
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v6
         with:
           name: coverage-xml-${{ matrix.os }}-py${{ matrix.python-version }}
           path: coverage.xml
 
       - name: Upload coverage report to Codecov
-        if: ${{ secrets.CODECOV_TOKEN != '' }}
-        uses: codecov/codecov-action@v4
+        if: ${{ env.CODECOV_TOKEN != '' }}
+        uses: codecov/codecov-action@v5
         with:
           fail_ci_if_error: true
           files: coverage.xml
         env:
-          CODECOV_TOKEN: ${{ secrets.CODECOV_TOKEN }}
+          CODECOV_TOKEN: ${{ env.CODECOV_TOKEN }}
 
       - name: Skip Codecov upload (no token)
-        if: ${{ secrets.CODECOV_TOKEN == '' }}
+        if: ${{ env.CODECOV_TOKEN == '' }}
         run: |
           echo "CODECOV_TOKEN not found. Skipping Codecov upload."
           echo ""

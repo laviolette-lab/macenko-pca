@@ -36,25 +36,71 @@ Typical usage::
 
 from __future__ import annotations
 
-from typing import Optional, Union
+from typing import Union
 
 import numpy as np
 from numpy.typing import ArrayLike, NDArray
 
-from macenko_pca._rust import (
-    py_color_deconvolution_f32,
-    py_color_deconvolution_f64,
-    py_reconstruct_rgb_f32,
-    py_reconstruct_rgb_f64,
-    py_rgb_color_deconvolution_f32,
-    py_rgb_color_deconvolution_f64,
-    py_rgb_separate_stains_macenko_pca_f32,
-    py_rgb_separate_stains_macenko_pca_f64,
-    py_rgb_to_sda_f32,
-    py_rgb_to_sda_f64,
-    py_separate_stains_macenko_pca_f32,
-    py_separate_stains_macenko_pca_f64,
-)
+try:
+    from macenko_pca._rust import (
+        py_color_deconvolution_f32,
+        py_color_deconvolution_f64,
+        py_reconstruct_rgb_f32,
+        py_reconstruct_rgb_f64,
+        py_rgb_color_deconvolution_f32,
+        py_rgb_color_deconvolution_f64,
+        py_rgb_separate_stains_macenko_pca_f32,
+        py_rgb_separate_stains_macenko_pca_f64,
+        py_rgb_to_sda_f32,
+        py_rgb_to_sda_f64,
+        py_separate_stains_macenko_pca_f32,
+        py_separate_stains_macenko_pca_f64,
+    )
+except Exception as exc:
+    # Provide informative stubs so importing the Python package doesn't
+    # immediately fail in environments where the compiled Rust extension
+    # is not present. Each stub raises a RuntimeError with actionable
+    # instructions when called.
+    _RUST_IMPORT_ERROR = (
+        "The compiled Rust extension 'macenko_pca._rust' is not available. "
+        "Build and install it to enable the high-performance implementations. "
+        "For development this typically means running something like:\n\n"
+        "  maturin develop\n\n"
+        "or otherwise ensuring the extension is built for your Python "
+        "interpreter. Original import error: "
+    ) + repr(exc)
+
+    def _missing_stub(fn_name: str):
+        def _stub(*args, **kwargs):
+            raise RuntimeError(
+                "macenko_pca._rust::"
+                + fn_name
+                + " is unavailable. "
+                + _RUST_IMPORT_ERROR
+            )
+
+        return _stub
+
+    py_color_deconvolution_f32 = _missing_stub("py_color_deconvolution_f32")
+    py_color_deconvolution_f64 = _missing_stub("py_color_deconvolution_f64")
+    py_reconstruct_rgb_f32 = _missing_stub("py_reconstruct_rgb_f32")
+    py_reconstruct_rgb_f64 = _missing_stub("py_reconstruct_rgb_f64")
+    py_rgb_color_deconvolution_f32 = _missing_stub("py_rgb_color_deconvolution_f32")
+    py_rgb_color_deconvolution_f64 = _missing_stub("py_rgb_color_deconvolution_f64")
+    py_rgb_separate_stains_macenko_pca_f32 = _missing_stub(
+        "py_rgb_separate_stains_macenko_pca_f32"
+    )
+    py_rgb_separate_stains_macenko_pca_f64 = _missing_stub(
+        "py_rgb_separate_stains_macenko_pca_f64"
+    )
+    py_rgb_to_sda_f32 = _missing_stub("py_rgb_to_sda_f32")
+    py_rgb_to_sda_f64 = _missing_stub("py_rgb_to_sda_f64")
+    py_separate_stains_macenko_pca_f32 = _missing_stub(
+        "py_separate_stains_macenko_pca_f32"
+    )
+    py_separate_stains_macenko_pca_f64 = _missing_stub(
+        "py_separate_stains_macenko_pca_f64"
+    )
 
 # Type alias for the supported return types.
 _FloatArray = Union[NDArray[np.float32], NDArray[np.float64]]
@@ -95,11 +141,11 @@ def _is_f32(arr: np.ndarray) -> bool:
 
 def rgb_separate_stains_macenko_pca(
     im_rgb: ArrayLike,
-    bg_int: Optional[list[float]] = None,
+    bg_int: list[float] | None = None,
     minimum_magnitude: float = 16.0,
     min_angle_percentile: float = 0.01,
     max_angle_percentile: float = 0.99,
-    mask_out: Optional[ArrayLike] = None,
+    mask_out: ArrayLike | None = None,
 ) -> _FloatArray:
     """Compute the stain matrix from an RGB image using the Macenko PCA method.
 
@@ -126,10 +172,10 @@ def rgb_separate_stains_macenko_pca(
         projected pixels in PCA space.
     :type minimum_magnitude: float
     :param min_angle_percentile: Lower angle percentile for selecting the
-        first stain vector (0–1 range).
+        first stain vector (0-1 range).
     :type min_angle_percentile: float
     :param max_angle_percentile: Upper angle percentile for selecting the
-        second stain vector (0–1 range).
+        second stain vector (0-1 range).
     :type max_angle_percentile: float
     :param mask_out: Optional boolean mask with shape ``(H, W)``.  Pixels
         where the mask is ``True`` are excluded from the computation.
@@ -179,7 +225,7 @@ def separate_stains_macenko_pca(
     minimum_magnitude: float = 16.0,
     min_angle_percentile: float = 0.01,
     max_angle_percentile: float = 0.99,
-    mask_out: Optional[ArrayLike] = None,
+    mask_out: ArrayLike | None = None,
 ) -> _FloatArray:
     """Compute the stain matrix from an SDA image using the Macenko PCA method.
 
@@ -196,9 +242,9 @@ def separate_stains_macenko_pca(
     :param minimum_magnitude: Minimum magnitude threshold for filtering
         projected pixels in PCA space.
     :type minimum_magnitude: float
-    :param min_angle_percentile: Lower angle percentile (0–1 range).
+    :param min_angle_percentile: Lower angle percentile (0-1 range).
     :type min_angle_percentile: float
-    :param max_angle_percentile: Upper angle percentile (0–1 range).
+    :param max_angle_percentile: Upper angle percentile (0-1 range).
     :type max_angle_percentile: float
     :param mask_out: Optional boolean mask with shape ``(H, W)``.  Pixels
         where the mask is ``True`` are excluded.
@@ -246,7 +292,7 @@ def separate_stains_macenko_pca(
 
 def rgb_to_sda(
     im_rgb: ArrayLike,
-    bg_int: Optional[list[float]] = None,
+    bg_int: list[float] | None = None,
     allow_negative: bool = False,
 ) -> _FloatArray:
     """Convert an RGB image or matrix to SDA (stain-density-absorbance) space.
@@ -296,14 +342,14 @@ def color_deconvolution(
     """Decompose an SDA image into per-stain concentration channels.
 
     Given an image in SDA (stain-density-absorbance) space and a stain
-    matrix **W** (3×3, columns = stain vectors), this function computes
+    matrix **W** (3x3, columns = stain vectors), this function computes
     the per-pixel stain concentrations by solving:
 
-        OD = W × c   ⟹   c = W⁻¹ × OD
+        OD = W x c => c = W⁻¹ x OD
 
     In matrix form for all pixels simultaneously:
 
-        concentrations = SDA_pixels × (W⁻¹)ᵀ
+        concentrations = SDA_pixels x (W⁻¹)ᵀ
 
     The returned array has the same spatial dimensions as the input; each
     channel *i* holds the concentration of stain *i*.
@@ -361,7 +407,7 @@ def color_deconvolution(
 def rgb_color_deconvolution(
     im_rgb: ArrayLike,
     stain_matrix: ArrayLike,
-    bg_int: Optional[list[float]] = None,
+    bg_int: list[float] | None = None,
 ) -> _FloatArray:
     """Decompose an RGB image into per-stain concentration channels.
 
@@ -420,16 +466,16 @@ def rgb_color_deconvolution(
 def reconstruct_rgb(
     concentrations: ArrayLike,
     stain_matrix: ArrayLike,
-    bg_int: Optional[float] = None,
+    bg_int: float | None = None,
 ) -> _FloatArray:
     """Reconstruct an RGB image from stain concentrations and a stain matrix.
 
     Inverts the deconvolution process performed by
     :func:`color_deconvolution` / :func:`rgb_color_deconvolution`:
 
-    1. Recompute the SDA image: ``SDA = concentrations × Wᵀ``
+    1. Recompute the SDA image: ``SDA = concentrations x Wᵀ``
     2. Convert SDA back to RGB:
-       ``RGB_ch = bg × exp(−SDA_ch × ln(bg) / 255)``
+       ``RGB_ch = bg x exp(-SDA_ch x ln(bg) / 255)``
 
     This is useful for stain normalisation workflows where you modify the
     concentration channels (e.g. scale, zero-out a stain) and then

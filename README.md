@@ -1,8 +1,8 @@
 # Macenko PCA
 
-[![Build](https://github.com/LavLabInfrastructure/macenko-pca/actions/workflows/build.yml/badge.svg)](https://github.com/LavLabInfrastructure/macenko-pca/actions/workflows/build.yml)
-[![Tests](https://github.com/LavLabInfrastructure/macenko-pca/actions/workflows/pytest.yml/badge.svg)](https://github.com/LavLabInfrastructure/macenko-pca/actions/workflows/pytest.yml)
-[![Lint](https://github.com/LavLabInfrastructure/macenko-pca/actions/workflows/lint.yml/badge.svg)](https://github.com/LavLabInfrastructure/macenko-pca/actions/workflows/lint.yml)
+[![Build](https://github.com/laviolette-lab/macenko-pca/actions/workflows/build.yml/badge.svg)](https://github.com/laviolette-lab/macenko-pca/actions/workflows/build.yml)
+[![Tests](https://github.com/laviolette-lab/macenko-pca/actions/workflows/pytest.yml/badge.svg)](https://github.com/laviolette-lab/macenko-pca/actions/workflows/pytest.yml)
+[![Lint](https://github.com/laviolette-lab/macenko-pca/actions/workflows/lint.yml/badge.svg)](https://github.com/laviolette-lab/macenko-pca/actions/workflows/lint.yml)
 [![PyPI - Version](https://img.shields.io/pypi/v/macenko-pca.svg)](https://pypi.org/project/macenko-pca)
 [![PyPI - Python Version](https://img.shields.io/pypi/pyversions/macenko-pca.svg)](https://pypi.org/project/macenko-pca)
 
@@ -10,9 +10,17 @@
 
 High-performance stain matrix estimation and colour deconvolution for histology images using the **Macenko PCA** method, with the compute-intensive core written in **Rust** via [PyO3](https://pyo3.rs/).
 
+Supported platforms: Linux and macOS only. Windows is not supported due to differences in BLAS/LAPACK / OpenBLAS builds that can cause numerical and linking inconsistencies; to ensure reproducible numerical results we build and test only on Linux and macOS.
+
 This implements the method described in:
 
 > Macenko, M. et al. "A method for normalizing histology slides for quantitative analysis." *ISBI 2009*.
+
+And was based off the implementation from HistomicsTK
+
+> <https://github.com/DigitalSlideArchive/HistomicsTK>
+
+Performance improvements between the HistomicsTK implementation and this one are discussed [here](https://github.com/DigitalSlideArchive/HistomicsTK/issues/1181#issuecomment-3164417399). We saw almost a quarter of the RAM usage and up to a 7x speedup in real world examples.
 
 ## Features
 
@@ -22,7 +30,7 @@ This implements the method described in:
 | **Simple API** | Six functions cover the full workflow — estimate stain vectors, decompose, and reconstruct |
 | **NumPy native** | Accepts and returns standard NumPy arrays — no special data structures required |
 | **Precision-aware** | Pass `float32` arrays to halve RAM usage — the dtype of your input controls which Rust code path runs |
-| **Cross-platform wheels** | Built with [maturin](https://github.com/PyO3/maturin) for Linux, macOS (x86_64 + arm64), and Windows |
+| **Platform support** | Built with [maturin](https://github.com/PyO3/maturin) for Linux and macOS (x86_64 + arm64). Windows is not supported. |
 
 ## Quick Start
 
@@ -236,7 +244,7 @@ gh release create v0.2.0 --generate-notes
 ```
 
 Creating the release triggers `publish.yml`, which:
-1. Builds wheels on Linux (manylinux), macOS (x86_64 + arm64), and Windows.
+1. Builds wheels on Linux (manylinux) and macOS (x86_64 + arm64). Windows builds are intentionally omitted due to platform LAPACK/BLAS inconsistencies that affect numerical reproducibility.
 2. Builds a source distribution.
 3. Publishes everything to PyPI via trusted publishing.
 
