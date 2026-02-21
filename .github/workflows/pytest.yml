@@ -61,7 +61,7 @@ jobs:
           python -m pytest --cov=src --cov-report=term-missing --cov-report=xml tests/
 
       - name: Upload coverage artifact
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v6
         with:
           name: coverage-xml-${{ matrix.os }}-py${{ matrix.python-version }}
           path: coverage.xml
