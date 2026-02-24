@@ -3,4 +3,4 @@
 # SPDX-License-Identifier: MIT
 """Version information for macenko_pca."""
 
-__version__ = "1.0.2"
+__version__ = "1.0.3"
