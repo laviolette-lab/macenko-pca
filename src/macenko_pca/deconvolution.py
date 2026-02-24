@@ -310,6 +310,13 @@ def rgb_separate_stains_macenko_pca(
         else py_rgb_separate_stains_macenko_pca_f64
     )
 
+    if bg_int is None:
+        _bg_int = None
+    elif isinstance(bg_int, (int, float, np.integer, np.floating)):
+        _bg_int = [float(bg_int)]
+    else:
+        _bg_int = list(bg_int)
+
     return np.asarray(
         fn(
             im_rgb,
