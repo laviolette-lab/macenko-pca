@@ -236,6 +236,19 @@ def _is_f32(arr: np.ndarray) -> bool:
     return arr.dtype == np.float32
 
 
+def _ensure_contiguous(arr: ArrayLike | None):
+    """Return a contiguous numpy array or None.
+
+    Many of the Rust-backed functions expect C-contiguous NumPy arrays.
+    Accepts None and returns None unchanged. Otherwise returns a numpy
+    array that is C-contiguous (converting a copy only when necessary).
+    """
+    if arr is None:
+        return None
+    a = np.asarray(arr)
+    return a if a.flags["C_CONTIGUOUS"] else np.ascontiguousarray(a)
+
+
 # ---------------------------------------------------------------------------
 # Stain matrix estimation
 # ---------------------------------------------------------------------------
@@ -317,14 +330,18 @@ def rgb_separate_stains_macenko_pca(
     else:
         _bg_int = list(bg_int)
 
+    # Ensure arrays passed to Rust are C-contiguous
+    im_rgb_c = _ensure_contiguous(im_rgb)
+    mask_c = _ensure_contiguous(mask) if mask is not None else None
+
     return np.asarray(
         fn(
-            im_rgb,
+            im_rgb_c,
             bg_int=bg_int,
             minimum_magnitude=minimum_magnitude,
             min_angle_percentile=min_angle_percentile,
             max_angle_percentile=max_angle_percentile,
-            mask_out=mask,
+            mask_out=mask_c,
         )
     )
 
@@ -383,13 +400,17 @@ def separate_stains_macenko_pca(
         else py_separate_stains_macenko_pca_f64
     )
 
+    # Ensure arrays passed to Rust are C-contiguous
+    im_sda_c = _ensure_contiguous(im_sda)
+    mask_c = _ensure_contiguous(mask) if mask is not None else None
+
     return np.asarray(
         fn(
-            im_sda,
+            im_sda_c,
             minimum_magnitude=minimum_magnitude,
             min_angle_percentile=min_angle_percentile,
             max_angle_percentile=max_angle_percentile,
-            mask_out=mask,
+            mask_out=mask_c,
         )
     )
 
@@ -430,9 +451,12 @@ def rgb_to_sda(
 
     fn = py_rgb_to_sda_f32 if _is_f32(im_rgb) else py_rgb_to_sda_f64
 
+    # Ensure arrays passed to Rust are C-contiguous
+    im_rgb_c = _ensure_contiguous(im_rgb)
+
     return np.asarray(
         fn(
-            im_rgb,
+            im_rgb_c,
             bg_int=bg_int,
             allow_negative=allow_negative,
         )
@@ -510,7 +534,11 @@ def color_deconvolution(
 
     fn = py_color_deconvolution_f32 if _is_f32(im_sda) else py_color_deconvolution_f64
 
-    return np.asarray(fn(im_sda, stain_matrix))
+    # Ensure arrays passed to Rust are C-contiguous
+    im_sda_c = _ensure_contiguous(im_sda)
+    stain_matrix_c = _ensure_contiguous(stain_matrix)
+
+    return np.asarray(fn(im_sda_c, stain_matrix_c))
 
 
 def rgb_color_deconvolution(
@@ -569,7 +597,11 @@ def rgb_color_deconvolution(
         else py_rgb_color_deconvolution_f64
     )
 
-    return np.asarray(fn(im_rgb, stain_matrix, bg_int=bg_int))
+    # Ensure arrays passed to Rust are C-contiguous
+    im_rgb_c = _ensure_contiguous(im_rgb)
+    stain_matrix_c = _ensure_contiguous(stain_matrix)
+
+    return np.asarray(fn(im_rgb_c, stain_matrix_c, bg_int=bg_int))
 
 
 def reconstruct_rgb(
@@ -635,4 +667,8 @@ def reconstruct_rgb(
 
     fn = py_reconstruct_rgb_f32 if _is_f32(concentrations) else py_reconstruct_rgb_f64
 
-    return np.asarray(fn(concentrations, stain_matrix, bg_int=bg_int))
+    # Ensure arrays passed to Rust are C-contiguous
+    concentrations_c = _ensure_contiguous(concentrations)
+    stain_matrix_c = _ensure_contiguous(stain_matrix)
+
+    return np.asarray(fn(concentrations_c, stain_matrix_c, bg_int=bg_int))
